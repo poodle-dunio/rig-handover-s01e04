@@ -20,4 +20,8 @@ describe('status board', () => {
     const res = await createApp(config).request('/health');
     expect(await res.json()).toEqual({ ok: true, lane: 'lane-07' });
   });
+
+  it.each(['2026-10-27', '2026-10-28'])('serves the digest linked for %s', async (night) => {
+    expect((await createApp(config).request(`/digest/${night}`)).status).toBe(200);
+  });
 });
