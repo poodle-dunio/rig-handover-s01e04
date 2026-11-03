@@ -9,5 +9,5 @@ export type DigestRow = {
   lastTime: string;
 };
 
-export type Digest = { rows: DigestRow[]; badLines: number };
+export type Digest = { rows: DigestRow[]; badLines: number; counts: Record<DigestRow['lastStatus'], number> };
 export type ReadNight = (runsDir: string, night: string) => Digest | null;

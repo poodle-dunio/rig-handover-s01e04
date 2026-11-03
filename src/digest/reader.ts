@@ -40,6 +40,7 @@ export const readNight: ReadNight = (runsDir, night): Digest | null => {
   if (lines.at(-1) === '') lines.pop();
   const jobs = new Map<string, { row: DigestRow; lastErrorAt: number }>();
   let badLines = 0;
+  const counts = { ok: 0, retry: 0, fail: 0 };
 
   for (const line of lines) {
     const entry = parseEntry(line);
@@ -48,6 +49,7 @@ export const readNight: ReadNight = (runsDir, night): Digest | null => {
       continue;
     }
     const time = Date.parse(entry.at);
+    counts[entry.status]++;
     const existing = jobs.get(entry.job);
     if (!existing) {
       jobs.set(entry.job, {
@@ -75,5 +77,5 @@ export const readNight: ReadNight = (runsDir, night): Digest | null => {
     }
   }
 
-  return { rows: [...jobs.values()].map(({ row }) => row).sort((a, b) => a.job < b.job ? -1 : a.job > b.job ? 1 : 0), badLines };
+  return { rows: [...jobs.values()].map(({ row }) => row).sort((a, b) => a.job < b.job ? -1 : a.job > b.job ? 1 : 0), badLines, counts };
 };
