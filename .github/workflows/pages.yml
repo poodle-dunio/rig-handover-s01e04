@@ -1,0 +1,46 @@
+name: Publish digest preview
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --ignore-scripts --no-package-lock --no-audit
+      - name: Render sample digest
+        env:
+          LANE_MARKER: ${{ secrets.LANE_MARKER }}
+        run: |
+          node --import tsx src/server.ts > /tmp/rig.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          mkdir -p _site
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8787/digest/2026-10-28 -o _site/index.html; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/rig.log
+          exit 1
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
