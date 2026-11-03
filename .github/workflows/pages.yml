@@ -25,8 +25,6 @@ jobs:
           node-version: '22'
       - run: npm install --ignore-scripts --no-package-lock --no-audit
       - name: Render sample digest
-        env:
-          LANE_MARKER: ${{ secrets.LANE_MARKER }}
         run: |
           node --import tsx src/server.ts > /tmp/rig.log 2>&1 &
           server=$!
